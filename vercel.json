@@ -6,6 +6,14 @@
       "dest": "/api/server.js"
     },
     {
+      "src": "/applications",
+      "dest": "/api/server.js"
+    },
+    {
+      "src": "/chats",
+      "dest": "/api/server.js"
+    },
+    {
       "src": "/auth/(.*)",
       "dest": "/api/server.js"
     },
