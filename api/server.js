@@ -12,10 +12,16 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // CORS support for local frontend testing
 app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin || '*';
+  // Allow explicit origin to support Authorization header in browsers
+  res.setHeader('Access-Control-Allow-Origin', origin === 'null' ? '*' : origin);
+  res.setHeader('Vary', 'Origin');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  // Allow Authorization header for Bearer tokens and common headers
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
   if (req.method === 'OPTIONS') {
+    // quick response for preflight
     return res.sendStatus(204);
   }
   next();
