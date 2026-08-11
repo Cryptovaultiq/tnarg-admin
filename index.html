@@ -1,0 +1,214 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <meta name="description" content="Standalone admin dashboard for reviewing submitted applications.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'gov-blue': '#1B4B8C',
+                        'gov-dark': '#0F2A52',
+                        'gov-gold': '#C9A227'
+                    },
+                    fontFamily: { 'sans': ['Inter', 'sans-serif'] }
+                }
+            }
+        };
+    </script>
+    <style>
+        body { font-family: Inter, sans-serif; }
+        .gov-input { border: 2px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; font-size: 14px; transition: all 0.3s ease; width: 100%; }
+        .gov-input:focus { border-color: #1B4B8C; outline: none; box-shadow: 0 0 0 3px rgba(27, 75, 140, 0.1); }
+        .gov-btn { background: linear-gradient(135deg, #1B4B8C, #0F2A52); color: white; padding: 12px 24px; border-radius: 8px; font-weight: 600; border: none; cursor: pointer; transition: all 0.3s ease; }
+        .gov-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(27, 75, 140, 0.25); }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 50; backdrop-filter: blur(4px); }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background: white; border-radius: 16px; max-width: 700px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        .status-pending { background: #FEF3C7; color: #92400E; }
+        .status-accepted { background: #D1FAE5; color: #065F46; }
+        .status-rejected { background: #FEE2E2; color: #991B1B; }
+        .status-under-review { background: #DBEAFE; color: #1E40AF; }
+        .status-disbursed { background: #E0E7FF; color: #3730A3; }
+        .message-badge { display: inline-flex; align-items: center; gap: 0.35rem; color: #475569; font-size: 0.85rem; border: 1px solid #CBD5E1; border-radius: 999px; padding: 0.35rem 0.6rem; }
+        .message-badge i { color: #1B4B8C; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <header class="bg-gradient-to-r from-gray-800 to-gray-950 text-white shadow-lg">
+        <div class="max-w-6xl mx-auto px-4 py-6 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-shield-alt text-3xl text-green-400"></i>
+                <div>
+                    <h1 class="text-2xl font-bold">Admin Panel</h1>
+                    <p class="text-gray-300 text-sm">Standalone review dashboard</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="openChatPanel" class="px-3 py-2 border rounded-lg text-sm hover:bg-gray-50"><i class="fas fa-comments mr-1"></i>Chats</button>
+                <script>
+                    // Ensure admin JS has a sensible API base during local testing
+                    window.ADMIN_PANEL_CONFIG = window.ADMIN_PANEL_CONFIG || {};
+                    if (!window.ADMIN_PANEL_CONFIG.API_BASE_URL && (location.hostname === '127.0.0.1' || location.hostname === 'localhost')) {
+                        window.ADMIN_PANEL_CONFIG.API_BASE_URL = 'http://127.0.0.1:3000';
+                    }
+                </script>
+                <button id="logoutButton" class="hidden text-sm text-red-200 hover:text-white"><i class="fas fa-sign-out-alt mr-1"></i>Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 py-8">
+        <section id="loginView" class="max-w-md mx-auto bg-white rounded-2xl shadow-sm border p-6">
+            <div class="bg-amber-50 border-l-4 border-amber-500 p-4 mb-6 rounded-r-lg">
+                <p class="text-amber-700 text-sm"><i class="fas fa-lock mr-2"></i><strong>Demo login only.</strong><br>For production, put authentication in a backend/provider. Default: <strong>admin</strong> / <strong>admin123</strong></p>
+            </div>
+            <form id="loginForm" class="space-y-4">
+                <div><label class="block text-sm font-medium text-gray-700 mb-2">Username</label><input type="text" id="adminUsername" class="gov-input" autocomplete="username" required></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-2">Password</label><input type="password" id="adminPassword" class="gov-input" autocomplete="current-password" required></div>
+                <button type="submit" class="gov-btn w-full"><i class="fas fa-sign-in-alt mr-2"></i>Login</button>
+            </form>
+        </section>
+
+        <section id="dashboardView" class="hidden space-y-6">
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-blue-900 text-sm">
+                <i class="fas fa-circle-info mr-2"></i>
+                <span id="dataSourceNote">Reading local demo data from this admin app origin.</span>
+            </div>
+
+            <div class="grid md:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-xl border shadow-sm text-center"><p class="text-3xl font-bold text-gov-blue" id="totalApps">0</p><p class="text-sm text-gray-600">Total Applications</p></div>
+                <div class="bg-white p-5 rounded-xl border shadow-sm text-center"><p class="text-3xl font-bold text-yellow-600" id="pendingApps">0</p><p class="text-sm text-gray-600">Pending</p></div>
+                <div class="bg-white p-5 rounded-xl border shadow-sm text-center"><p class="text-3xl font-bold text-green-600" id="acceptedApps">0</p><p class="text-sm text-gray-600">Accepted</p></div>
+                <div class="bg-white p-5 rounded-xl border shadow-sm text-center"><p class="text-3xl font-bold text-purple-600" id="disbursedApps">0</p><p class="text-sm text-gray-600">Disbursed</p></div>
+            </div>
+
+            <div class="bg-white rounded-xl border shadow-sm p-5">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+                    <h2 class="font-bold text-gray-800 text-lg">Applications</h2>
+                    <div class="flex gap-2">
+                        <button id="refreshButton" class="px-4 py-2 border rounded-lg hover:bg-gray-50"><i class="fas fa-rotate mr-1"></i>Refresh</button>
+                        <button id="seedDemoButton" class="px-4 py-2 border rounded-lg hover:bg-gray-50"><i class="fas fa-flask mr-1"></i>Load demo data</button>
+                    </div>
+                </div>
+                <input type="text" id="searchApps" class="gov-input mb-4" placeholder="Search by name, masked SSN, or ID...">
+                <div id="applicationsList" class="space-y-3"></div>
+            </div>
+        </section>
+    </main>
+
+    <div id="editAppModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 620px;">
+            <div class="bg-gradient-to-r from-gov-blue to-gov-dark text-white p-4 rounded-t-2xl">
+                <div class="flex items-center justify-between"><h3 class="font-bold"><i class="fas fa-edit mr-2"></i>Edit Application</h3><button type="button" data-close-modal class="text-white hover:text-gray-300"><i class="fas fa-times"></i></button></div>
+            </div>
+            <div class="p-6">
+                <form id="editAppForm" class="space-y-4">
+                    <input type="hidden" id="editAppId">
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div><label class="block text-sm font-medium text-gray-700 mb-2">Applicant Name</label><input type="text" id="editAppName" class="gov-input bg-gray-100" readonly></div>
+                        <div><label class="block text-sm font medium text-gray-700 mb-2">Social Security Number</label><input type="text" id="editAppSSN" class="gov-input bg-gray-100" readonly></div>
+                    </div>
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div><label class="block text-sm font-medium text-gray-700 mb-2">Email</label><input type="text" id="editAppEmail" class="gov-input bg-gray-100" readonly></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-2">Phone</label><input type="text" id="editAppPhone" class="gov-input bg-gray-100" readonly></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label><input type="text" id="editAppDob" class="gov-input bg-gray-100" readonly></div>
+                    </div>
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div><label class="block text-sm font-medium text-gray-700 mb-2">City</label><input type="text" id="editAppCity" class="gov-input bg-gray-100" readonly></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-2">State</label><input type="text" id="editAppState" class="gov-input bg-gray-100" readonly></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-2">ZIP</label><input type="text" id="editAppZip" class="gov-input bg-gray-100" readonly></div>
+                    </div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-2">Street Address</label><input type="text" id="editAppAddress" class="gov-input bg-gray-100" readonly></div>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div><label class="block text-sm font-medium text-gray-700 mb-2">Bank Name</label><input type="text" id="editAppBankName" class="gov-input bg-gray-100" readonly></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-2">Account Type</label><input type="text" id="editAppAccountType" class="gov-input bg-gray-100" readonly></div>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div><label class="block text-sm font-medium text-gray-700 mb-2">Routing Number</label><input type="text" id="editAppRoutingNumber" class="gov-input bg-gray-100" readonly></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-2">Account Number</label><input type="text" id="editAppAccountNumber" class="gov-input bg-gray-100" readonly></div>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">ID Front File</label>
+                            <input type="text" id="editAppIdFrontFile" class="gov-input bg-gray-100" readonly>
+                            <a id="editAppIdFrontLink" class="text-sm text-gov-blue hover:text-gov-dark underline mt-2 inline-block hidden" target="_blank" rel="noreferrer">View / Download</a>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">ID Back File</label>
+                            <input type="text" id="editAppIdBackFile" class="gov-input bg-gray-100" readonly>
+                            <a id="editAppIdBackLink" class="text-sm text-gov-blue hover:text-gov-dark underline mt-2 inline-block hidden" target="_blank" rel="noreferrer">View / Download</a>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h4 class="font-bold text-gray-800 mb-3"><i class="fas fa-credit-card mr-2 text-gov-blue"></i>Payment Details</h4>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div><label class="block text-sm font-medium text-gray-700 mb-2">Card Holder</label><input type="text" id="editAppCardHolder" class="gov-input bg-gray-100" readonly></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-2">Card Number</label><input type="text" id="editAppCardNumber" class="gov-input bg-gray-100" readonly></div>
+                        </div>
+                        <div class="grid md:grid-cols-3 gap-4 mt-4">
+                            <div><label class="block text-sm font-medium text-gray-700 mb-2">Card Brand</label><input type="text" id="editAppCardBrand" class="gov-input bg-gray-100" readonly></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-2">Expiry</label><input type="text" id="editAppCardExpiry" class="gov-input bg-gray-100" readonly></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-2">CVV</label><input type="text" id="editAppCVV" class="gov-input bg-gray-100" readonly></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-2">Postal Code</label><input type="text" id="editAppPostalCode" class="gov-input bg-gray-100" readonly></div>
+                        </div>
+                    </div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-2">Application Status</label><select id="editAppStatus" class="gov-input" required><option value="pending">Pending</option><option value="under_review">Under Review</option><option value="accepted">Accepted</option><option value="rejected">Rejected</option><option value="disbursed">Disbursed</option></select></div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h4 class="font-bold text-gray-800 mb-3"><i class="fas fa-check-double mr-2 text-gov-blue"></i>Information Verification</h4>
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" id="verifyIdentity" class="w-5 h-5"><span>Identity Verified</span></label>
+                            <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" id="verifyIncome" class="w-5 h-5"><span>Income Verified</span></label>
+                            <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" id="verifyDocuments" class="w-5 h-5"><span>Documents Complete</span></label>
+                            <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" id="verifyNoDebts" class="w-5 h-5"><span>No Outstanding Debts</span></label>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h4 class="font-bold text-gray-800 mb-3"><i class="fas fa-tasks mr-2 text-gov-blue"></i>Conditions for Disbursement</h4>
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" id="condW2" class="w-5 h-5"><span>W-2 Forms Submitted</span></label>
+                            <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" id="condBank" class="w-5 h-5"><span>Bank Account Verified</span></label>
+                            <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" id="condAddress" class="w-5 h-5"><span>Address Verified</span></label>
+                            <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" id="condSignature" class="w-5 h-5"><span>Authorization Signed</span></label>
+                        </div>
+                    </div>
+                    <div id="disbursementAlert" class="hidden bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg text-green-700 text-sm"><i class="fas fa-check-circle mr-2"></i><strong>Ready for Disbursement</strong><br>All requirements have been met.</div>
+                    <div id="notReadyAlert" class="hidden bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg text-amber-700 text-sm"><i class="fas fa-exclamation-triangle mr-2"></i><strong>Not Ready</strong><br><span id="missingRequirements">Missing requirements...</span></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-2">Admin Notes</label><textarea id="editAppNotes" rows="3" class="gov-input" placeholder="Add notes..."></textarea></div>
+                    <div class="flex gap-3">
+                        <button type="submit" class="gov-btn flex-1"><i class="fas fa-save mr-2"></i>Save Changes</button>
+                        <button type="button" data-close-modal class="px-6 py-3 border-2 border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Admin Chat Panel -->
+    <div id="adminChatPanel" class="modal-overlay" style="display:none">
+        <div class="modal-content" style="max-width:900px; display:flex; gap:0;">
+            <div style="width:320px; border-right:1px solid #eef2ff; padding:16px; overflow:auto;">
+                <h3 class="font-bold mb-3">Visitor Chats</h3>
+                <div id="chatList" class="space-y-2"></div>
+            </div>
+            <div style="flex:1; padding:16px; display:flex; flex-direction:column;">
+                <div id="chatWindowHeader" class="mb-2 font-semibold">Select a visitor</div>
+                <div id="chatWindow" style="flex:1; overflow:auto; border:1px solid #f1f5f9; padding:12px; border-radius:8px; background:#fff"></div>
+                <div class="mt-3 flex gap-2">
+                    <input id="adminChatInput" class="gov-input flex-1" placeholder="Type a message...">
+                    <button id="adminSendBtn" class="gov-btn">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.generated.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
