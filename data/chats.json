@@ -8,6 +8,13 @@
         "timestamp": "2026-08-11T22:52:39.922Z",
         "readByAdmin": false,
         "readByVisitor": true
+      },
+      {
+        "from": "visitor",
+        "text": "Hello",
+        "timestamp": "2026-08-11T22:55:14.111Z",
+        "readByAdmin": false,
+        "readByVisitor": true
       }
     ]
   }
