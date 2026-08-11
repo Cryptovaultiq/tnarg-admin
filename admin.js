@@ -58,21 +58,38 @@ function normalizeApp(app) {
 function getAdminApiBaseUrl() {
     const raw = ADMIN_PANEL_CONFIG.API_BASE_URL ? ADMIN_PANEL_CONFIG.API_BASE_URL.replace(/\/$/, '') : '';
     if (raw) {
-        return raw.endsWith('/admin/api') ? raw : `${raw}/admin/api`;
+        if (raw.endsWith('/admin/api') || raw.endsWith('/api')) return raw;
+        return `${raw}/api`;
     }
     if (location.hostname === '127.0.0.1' || location.hostname === 'localhost') {
-        return 'http://127.0.0.1:3000/admin/api';
+        return 'http://127.0.0.1:3000/api';
     }
     return `${location.origin}/api`;
+}
+
+function getAdminAuthToken() {
+    const token = localStorage.getItem('adminAuthToken');
+    if (!token || token === 'undefined' || token === 'null') return null;
+    return token;
 }
 
 async function loadApplications() {
     const baseUrl = getAdminApiBaseUrl();
     try {
         $('dataSourceNote').textContent = `Reading data from API: ${baseUrl}`;
+        const token = getAdminAuthToken();
+        if (!token) {
+            clearAdminAuthToken();
+            throw new Error('Missing admin token. Please log in again.');
+        }
         const response = await fetch(`${baseUrl}/applications`, {
-            headers: { Authorization: `Bearer ${getAdminAuthToken()}` }
+            headers: { Authorization: `Bearer ${token}` }
         });
+        if (response.status === 401) {
+            clearAdminAuthToken();
+            logoutAdmin();
+            throw new Error('Unauthorized. Please log in again.');
+        }
         if (!response.ok) throw new Error(`Application API returned ${response.status}`);
         const data = await response.json();
         return Array.isArray(data) ? data.map(normalizeApp) : [];
@@ -224,10 +241,6 @@ async function login(username, password) {
         console.error('Admin login failed', err);
         return false;
     }
-}
-
-function getAdminAuthToken() {
-    return localStorage.getItem('adminAuthToken');
 }
 
 function clearAdminAuthToken() {

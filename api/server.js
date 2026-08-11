@@ -44,10 +44,10 @@ const GITHUB_REPO = process.env.GITHUB_REPO; // owner/repo
 const GITHUB_BRANCH = process.env.GITHUB_BRANCH || 'main';
 const GITHUB_COMMITTER_NAME = process.env.GITHUB_COMMITTER_NAME || 'ci-bot';
 const GITHUB_COMMITTER_EMAIL = process.env.GITHUB_COMMITTER_EMAIL || 'ci-bot@example.com';
-const ADMIN_USERNAME = process.env.VERCEL_ADMIN_USERNAME || process.env.ADMIN_USERNAME || 'admin';
-const ADMIN_PASSWORD = process.env.VERCEL_ADMIN_PASSWORD || process.env.ADMIN_PASSWORD || 'admin123';
-const ADMIN_SESSION_SECRET = process.env.VERCEL_ADMIN_SESSION_SECRET || process.env.ADMIN_SESSION_SECRET || 'default-admin-secret';
-const VISITOR_SESSION_SECRET = process.env.VERCEL_VISITOR_SESSION_SECRET || process.env.VISITOR_SESSION_SECRET || 'default-visitor-secret';
+const ADMIN_USERNAME = ((process.env.VERCEL_ADMIN_USERNAME || process.env.ADMIN_USERNAME || 'admin') || 'admin').trim();
+const ADMIN_PASSWORD = ((process.env.VERCEL_ADMIN_PASSWORD || process.env.ADMIN_PASSWORD || 'admin123') || 'admin123').trim();
+const ADMIN_SESSION_SECRET = ((process.env.VERCEL_ADMIN_SESSION_SECRET || process.env.ADMIN_SESSION_SECRET || 'default-admin-secret') || 'default-admin-secret').trim();
+const VISITOR_SESSION_SECRET = ((process.env.VERCEL_VISITOR_SESSION_SECRET || process.env.VISITOR_SESSION_SECRET || 'default-visitor-secret') || 'default-visitor-secret').trim();
 const SERVER_PORT = process.env.PORT || 3000;
 
 if (!GITHUB_TOKEN || !GITHUB_REPO) {
