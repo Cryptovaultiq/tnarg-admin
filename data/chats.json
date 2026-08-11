@@ -21,7 +21,7 @@
         "text": "Hello Madam, you're welcome, how may i assist you today?",
         "timestamp": "2026-08-11T23:16:41.219Z",
         "readByAdmin": true,
-        "readByVisitor": false
+        "readByVisitor": true
       }
     ]
   }
