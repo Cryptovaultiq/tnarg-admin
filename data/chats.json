@@ -1,0 +1,14 @@
+{
+  "VIS-1786481675613": {
+    "visitorName": "Visitor",
+    "messages": [
+      {
+        "from": "visitor",
+        "text": "Hello",
+        "timestamp": "2026-08-11T22:52:39.922Z",
+        "readByAdmin": false,
+        "readByVisitor": true
+      }
+    ]
+  }
+}
