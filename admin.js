@@ -70,15 +70,16 @@ async function loadApplications() {
     const baseUrl = getAdminApiBaseUrl();
     try {
         $('dataSourceNote').textContent = `Reading data from API: ${baseUrl}`;
-        const response = await fetch(`${baseUrl}/applications`, { credentials: 'include' });
+        const response = await fetch(`${baseUrl}/applications`, {
+            headers: { Authorization: `Bearer ${getAdminAuthToken()}` }
+        });
         if (!response.ok) throw new Error(`Application API returned ${response.status}`);
         const data = await response.json();
         return Array.isArray(data) ? data.map(normalizeApp) : [];
     } catch (err) {
-        console.warn('API load failed, falling back to localStorage/demo data', err.message);
-        $('dataSourceNote').textContent = 'Reading local demo data from this admin app origin. Separate Vercel deployments need a shared API/database to exchange visitor submissions.';
-        const raw = localStorage.getItem(STORAGE_KEY);
-        return raw ? JSON.parse(raw).map(normalizeApp) : [];
+        console.error('API load failed', err.message);
+        $('dataSourceNote').textContent = 'Unable to load from API. Check admin authentication and backend persistence.';
+        return [];
     }
 }
 
@@ -87,15 +88,17 @@ async function persistApplication(updatedApp) {
     try {
         const response = await fetch(`${baseUrl}/applications/${encodeURIComponent(updatedApp.id)}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${getAdminAuthToken()}`
+            },
             body: JSON.stringify(updatedApp)
         });
         if (!response.ok) throw new Error(`Application API returned ${response.status}`);
         return;
     } catch (err) {
-        console.warn('API persist failed, falling back to localStorage', err.message);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(applications));
+        console.error('API persist failed', err.message);
+        throw err;
     }
 }
 
@@ -122,12 +125,14 @@ function closeChatPanel() {
 async function loadChatSummaries() {
     const baseUrl = getAdminApiBaseUrl();
     try {
-        const resp = await fetch(`${baseUrl}/chats`, { credentials: 'include' });
+        const resp = await fetch(`${baseUrl}/chats`, {
+            headers: { Authorization: `Bearer ${getAdminAuthToken()}` }
+        });
         if (!resp.ok) throw new Error('Unable to load chats');
         const summaries = await resp.json();
         renderChatList(summaries);
     } catch (err) {
-        console.warn('Load chats failed', err.message);
+        console.error('Load chats failed', err.message);
         $('chatList').innerHTML = '<p class="text-sm text-gray-500">Unable to load chats.</p>';
     }
 }
@@ -154,16 +159,18 @@ function renderChatList(summaries) {
 async function openVisitorChat(visitorId) {
     const baseUrl = getAdminApiBaseUrl();
     try {
-        const resp = await fetch(`${baseUrl}/chats/${encodeURIComponent(visitorId)}`, { credentials: 'include' });
+        const resp = await fetch(`${baseUrl}/chats/${encodeURIComponent(visitorId)}`, {
+            headers: { Authorization: `Bearer ${getAdminAuthToken()}` }
+        });
         if (!resp.ok) throw new Error('Unable to load chat messages');
         const chat = await resp.json();
         $('chatWindowHeader').textContent = chat.visitorName || visitorId;
         $('chatWindow').innerHTML = (chat.messages || []).map(m => `<div class="mb-2"><div class="text-xs text-gray-500">${m.from} • ${new Date(m.timestamp).toLocaleString()}</div><div class="mt-1">${escapeHtml(m.text)}</div></div>`).join('');
-        // mark read
-        await fetch(`${baseUrl}/chats/${encodeURIComponent(visitorId)}/markRead`, { method: 'POST' });
-        // refresh list to clear badges
+        await fetch(`${baseUrl}/chats/${encodeURIComponent(visitorId)}/markRead`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${getAdminAuthToken()}` }
+        });
         await loadChatSummaries();
-        // set current visitor for sending
         $('adminSendBtn').dataset.visitor = visitorId;
     } catch (err) {
         console.error(err);
@@ -187,7 +194,10 @@ document.getElementById('adminSendBtn')?.addEventListener('click', async () => {
     try {
         await fetch(`${baseUrl}/chats/${encodeURIComponent(visitorId)}/message`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${getAdminAuthToken()}`
+            },
             body: JSON.stringify({ from: 'admin', text })
         });
         document.getElementById('adminChatInput').value = '';
@@ -198,17 +208,37 @@ document.getElementById('adminSendBtn')?.addEventListener('click', async () => {
     }
 });
 
-function login(username, password) {
-    const expectedUser = ADMIN_PANEL_CONFIG.USERNAME || 'admin';
-    const expectedPass = ADMIN_PANEL_CONFIG.PASSWORD || 'admin123';
-    return username === expectedUser && password === expectedPass;
+async function login(username, password) {
+    try {
+        const baseUrl = getAdminApiBaseUrl();
+        const resp = await fetch(`${baseUrl}/auth/admin/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        if (!resp.ok) return false;
+        const data = await resp.json();
+        localStorage.setItem('adminAuthToken', data.token);
+        return true;
+    } catch (err) {
+        console.error('Admin login failed', err);
+        return false;
+    }
 }
 
-function showDashboard() {
+function getAdminAuthToken() {
+    return localStorage.getItem('adminAuthToken');
+}
+
+function clearAdminAuthToken() {
+    localStorage.removeItem('adminAuthToken');
+}
+
+async function showDashboard() {
     $('loginView').classList.add('hidden');
     $('dashboardView').classList.remove('hidden');
     $('logoutButton').classList.remove('hidden');
-    refreshDashboard();
+    await refreshDashboard();
 }
 
 function logoutAdmin() {
@@ -378,17 +408,23 @@ function seedDemoData() {
     renderApplicationsList();
 }
 
-$('loginForm').addEventListener('submit', (event) => {
+$('loginForm').addEventListener('submit', async (event) => {
     event.preventDefault();
-    if (login($('adminUsername').value, $('adminPassword').value)) {
-        currentAdmin = $('adminUsername').value;
+    const username = $('adminUsername').value;
+    const password = $('adminPassword').value;
+    const success = await login(username, password);
+    if (success) {
+        currentAdmin = username;
         showDashboard();
     } else {
         alert('Invalid credentials. Please try again.');
     }
 });
 
-$('logoutButton').addEventListener('click', logoutAdmin);
+$('logoutButton').addEventListener('click', () => {
+    clearAdminAuthToken();
+    logoutAdmin();
+});
 $('refreshButton').addEventListener('click', refreshDashboard);
 $('seedDemoButton').addEventListener('click', seedDemoData);
 $('searchApps').addEventListener('input', searchApplications);
@@ -406,7 +442,12 @@ async function deleteApplication(appId) {
     if (!confirm('Delete this application? This action cannot be undone.')) return;
     const baseUrl = ADMIN_PANEL_CONFIG.API_BASE_URL ? ADMIN_PANEL_CONFIG.API_BASE_URL.replace(/\/$/, '') : '/api';
     try {
-        const response = await fetch(`${baseUrl}/applications/${encodeURIComponent(appId)}`, { method: 'DELETE', credentials: 'include' });
+        const response = await fetch(`${baseUrl}/applications/${encodeURIComponent(appId)}`, {
+            method: 'DELETE',
+            headers: {
+                Authorization: `Bearer ${getAdminAuthToken()}`
+            }
+        });
         if (!response.ok) {
             alert('Unable to delete application: ' + response.status);
             return;
