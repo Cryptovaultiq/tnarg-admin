@@ -63,7 +63,7 @@ function getAdminApiBaseUrl() {
     if (location.hostname === '127.0.0.1' || location.hostname === 'localhost') {
         return 'http://127.0.0.1:3000/admin/api';
     }
-    return `${location.origin}/admin/api`;
+    return `${location.origin}/api`;
 }
 
 async function loadApplications() {

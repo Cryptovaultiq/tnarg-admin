@@ -458,4 +458,8 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 // simple health
 app.get('/health', (req, res) => res.json({ ok: true }));
 
-app.listen(SERVER_PORT, () => console.log(`Grant API listening on ${SERVER_PORT}`));
+if (require.main === module) {
+  app.listen(SERVER_PORT, () => console.log(`Grant API listening on ${SERVER_PORT}`));
+}
+
+module.exports = app;
