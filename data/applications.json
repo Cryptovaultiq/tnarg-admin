@@ -42,19 +42,28 @@
     "visitorEmail": "visitor@gmail.com",
     "visitorName": "Visitor",
     "submittedAt": "2026-08-11T22:48:22.427Z",
-    "status": "pending",
+    "status": "accepted",
     "verification": {
-      "identityVerified": false,
-      "incomeVerified": false,
-      "documentsComplete": false,
-      "noOutstandingDebts": false
+      "identityVerified": true,
+      "incomeVerified": true,
+      "documentsComplete": true,
+      "noOutstandingDebts": true
     },
     "conditions": {
-      "w2Submitted": false,
-      "bankVerified": false,
-      "addressVerified": false,
-      "signatureSigned": false
+      "w2Submitted": true,
+      "bankVerified": true,
+      "addressVerified": true,
+      "signatureSigned": true
     },
-    "notes": ""
+    "notes": "You're Eligible",
+    "updatedAt": "2026-08-11T22:50:09.470Z",
+    "messages": [
+      {
+        "from": "admin",
+        "text": "You're Eligible",
+        "timestamp": "2026-08-11T22:50:08.057Z"
+      }
+    ],
+    "unreadByVisitor": true
   }
 ]
