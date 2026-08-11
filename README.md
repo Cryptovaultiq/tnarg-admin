@@ -31,3 +31,5 @@ Expected API shape if configured:
 - `PUT /applications/:id` accepts an updated application record.
 
 Do not use the demo username/password for production. Production auth should be handled server-side or by an auth provider.
+
+> Note: This repository has been updated with a harmless documentation-only change to trigger a fresh Vercel redeploy.
