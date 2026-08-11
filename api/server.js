@@ -97,7 +97,7 @@ function getAdminFromAuth(req) {
   const token = getAuthHeader(req);
   const verified = verifyToken(token, ADMIN_SESSION_SECRET);
   if (!verified) return null;
-  return verified.payload === `${ADMIN_USERNAME}:${ADMIN_PASSWORD}` ? { username: ADMIN_USERNAME } : null;
+  return verified.payload === 'admin' ? { username: ADMIN_USERNAME } : null;
 }
 
 function getVisitorFromAuth(req) {
@@ -282,7 +282,9 @@ app.post('/auth/admin/login', async (req, res) => {
   if (username !== ADMIN_USERNAME || password !== ADMIN_PASSWORD) {
     return res.status(401).json({ error: 'Invalid credentials' });
   }
-  const token = createToken(`${ADMIN_USERNAME}:${ADMIN_PASSWORD}`, ADMIN_SESSION_SECRET, 86400);
+  // Keep credentials out of the token payload. The old username/password
+  // payload conflicted with the colon-delimited session token format.
+  const token = createToken('admin', ADMIN_SESSION_SECRET, 86400);
   res.json({ token });
 });
 
