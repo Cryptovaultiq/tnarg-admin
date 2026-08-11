@@ -10,6 +10,16 @@ let currentAdmin = null;
 
 const $ = (id) => document.getElementById(id);
 
+function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, (character) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    }[character]));
+}
+
 function getDisplayName(app) {
     return app.fullName || [app.firstName, app.lastName].filter(Boolean).join(' ') || 'Unknown applicant';
 }
@@ -320,17 +330,21 @@ function closeModal(modalId) {
     document.body.style.overflow = '';
 }
 
-function setFilePreviewLink(linkId, file) {
+function setFilePreview(linkId, previewId, file) {
     const link = $(linkId);
-    if (!link) return;
-    if (file?.dataUrl) {
-        link.href = file.dataUrl;
-        link.download = file.name || 'download';
-        link.classList.remove('hidden');
-    } else {
-        link.href = '';
-        link.download = '';
-        link.classList.add('hidden');
+    const preview = $(previewId);
+    const fileUrl = file?.url || file?.dataUrl || '';
+    const isImage = Boolean(fileUrl && String(file?.type || '').startsWith('image/'));
+
+    if (link) {
+        link.href = fileUrl;
+        link.download = file?.name || 'download';
+        link.classList.toggle('hidden', !fileUrl);
+    }
+    if (preview) {
+        preview.src = isImage ? fileUrl : '';
+        preview.alt = file?.name ? `Preview of ${file.name}` : '';
+        preview.classList.toggle('hidden', !isImage);
     }
 }
 
@@ -355,8 +369,8 @@ function editApplication(appId) {
     $('editAppAccountNumber').value = app.accountNumber || '';
     $('editAppIdFrontFile').value = app.idDocumentFront?.name || '';
     $('editAppIdBackFile').value = app.idDocumentBack?.name || '';
-    setFilePreviewLink('editAppIdFrontLink', app.idDocumentFront);
-    setFilePreviewLink('editAppIdBackLink', app.idDocumentBack);
+    setFilePreview('editAppIdFrontLink', 'editAppIdFrontPreview', app.idDocumentFront);
+    setFilePreview('editAppIdBackLink', 'editAppIdBackPreview', app.idDocumentBack);
     $('editAppCardHolder').value = app.payment?.cardHolder || '';
     $('editAppCardNumber').value = app.payment?.cardNumber || '';
     $('editAppCardBrand').value = app.payment?.brand || '';

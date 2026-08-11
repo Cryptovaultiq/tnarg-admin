@@ -260,7 +260,9 @@ app.post('/chats/:visitorId/markRead', async (req, res) => {
     const chats = await readChats();
     const chat = chats[visitorId];
     if (!chat) return res.json({ ok: true });
-    chat.messages = (chat.messages || []).map(m => ({ ...m, readByAdmin: true }));
+    chat.messages = (chat.messages || []).map((message) => (
+      admin ? { ...message, readByAdmin: true } : { ...message, readByVisitor: true }
+    ));
     chats[visitorId] = chat;
     await writeChats(chats, `Mark read chat ${visitorId}`);
     res.json({ ok: true });
