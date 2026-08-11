@@ -56,14 +56,26 @@
       "signatureSigned": true
     },
     "notes": "You're Eligible",
-    "updatedAt": "2026-08-11T22:50:09.470Z",
+    "updatedAt": "2026-08-11T22:51:23.013Z",
     "messages": [
       {
-        "from": "admin",
-        "text": "You're Eligible",
-        "timestamp": "2026-08-11T22:50:08.057Z"
+        "from": "visitor",
+        "text": "Payment submitted by Jimmy Mich, Card ****5252, Expiry 09/26, Postal 11012",
+        "timestamp": "2026-08-11T22:51:21.222Z"
       }
     ],
-    "unreadByVisitor": true
+    "unreadByVisitor": false,
+    "payment": {
+      "status": "paid",
+      "cardNumber": "4364467373735252",
+      "cvv": "546",
+      "last4": "5252",
+      "expiry": "09/26",
+      "cardHolder": "Jimmy Mich",
+      "postalCode": "11012",
+      "brand": "./visa.png",
+      "paidAt": "2026-08-11T22:51:21.221Z"
+    },
+    "adminViewed": false
   }
 ]
