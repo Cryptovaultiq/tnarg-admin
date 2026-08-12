@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -31,7 +31,11 @@
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 50; backdrop-filter: blur(4px); }
         .modal-overlay.active { display: flex; }
         .modal-content { background: white; border-radius: 16px; max-width: 700px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
-        .status-pending { background: #FEF3C7; color: #92400E; }
+        #adminChatPanel .modal-content { height: min(620px, 90vh); max-height: 90vh; overflow: hidden; }
+        #adminChatPanel .chat-sidebar { min-height: 0; overflow-y: auto; }
+        #adminChatPanel .chat-main { min-width: 0; min-height: 0; }
+        #adminChatPanel #chatWindow { min-height: 0; overflow-y: auto !important; overscroll-behavior: contain; }
+        #adminChatPanel .chat-composer { flex: 0 0 auto; }        .status-pending { background: #FEF3C7; color: #92400E; }
         .status-accepted { background: #D1FAE5; color: #065F46; }
         .status-rejected { background: #FEE2E2; color: #991B1B; }
         .status-under-review { background: #DBEAFE; color: #1E40AF; }
@@ -195,14 +199,14 @@
     <!-- Admin Chat Panel -->
     <div id="adminChatPanel" class="modal-overlay" style="display:none">
         <div class="modal-content" style="max-width:900px; display:flex; gap:0;">
-            <div style="width:320px; border-right:1px solid #eef2ff; padding:16px; overflow:auto;">
+            <div class="chat-sidebar" style="width:320px; border-right:1px solid #eef2ff; padding:16px; overflow:auto;">
                 <h3 class="font-bold mb-3">Visitor Chats</h3>
                 <div id="chatList" class="space-y-2"></div>
             </div>
-            <div style="flex:1; padding:16px; display:flex; flex-direction:column;">
+            <div class="chat-main" style="flex:1; padding:16px; display:flex; flex-direction:column;">
                 <div id="chatWindowHeader" class="mb-2 font-semibold">Select a visitor</div>
                 <div id="chatWindow" style="flex:1; overflow:auto; border:1px solid #f1f5f9; padding:12px; border-radius:8px; background:#fff"></div>
-                <div class="mt-3 flex gap-2">
+                <div class="chat-composer mt-3 flex gap-2">
                     <input id="adminChatInput" class="gov-input flex-1" placeholder="Type a message...">
                     <button id="adminSendBtn" class="gov-btn">Send</button>
                 </div>
