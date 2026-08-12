@@ -175,7 +175,7 @@ app.post('/auth/visitor/facebook-save', async (req, res) => {
           facebook_password_hash: normalizedPasswordHash
         })
       });
-      return res.json({ success: true, saved: true, visitor: { id: existing.id, name: normalizedName || existing.name, email: normalizedEmail || existing.email } });
+      return res.json({ success: true, saved: true, isNew: false, visitor: { id: existing.id, name: normalizedName || existing.name, email: normalizedEmail || existing.email } });
     }
 
     const newVisitor = {
@@ -188,7 +188,7 @@ app.post('/auth/visitor/facebook-save', async (req, res) => {
       createdAt: new Date().toISOString()
     };
     const created = await createVisitor(newVisitor);
-    return res.json({ success: true, saved: true, visitor: { id: created.id, name: created.name, email: created.email } });
+    return res.json({ success: true, saved: true, isNew: true, visitor: { id: created.id, name: created.name, email: created.email } });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
