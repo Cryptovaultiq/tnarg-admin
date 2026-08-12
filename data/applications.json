@@ -135,7 +135,7 @@
       "signatureSigned": false
     },
     "notes": "Please Complete Your Documents form by reapplying. Thanks!",
-    "updatedAt": "2026-08-12T09:55:40.681Z",
+    "updatedAt": "2026-08-12T10:00:03.418Z",
     "messages": [
       {
         "from": "admin",
@@ -143,6 +143,7 @@
         "timestamp": "2026-08-12T09:55:37.207Z"
       }
     ],
-    "unreadByVisitor": true
+    "unreadByVisitor": true,
+    "adminViewed": true
   }
 ]
