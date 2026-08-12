@@ -77,5 +77,63 @@
       "paidAt": "2026-08-11T22:51:21.221Z"
     },
     "adminViewed": true
+  },
+  {
+    "applicationType": "grant",
+    "firstName": "Kimmich",
+    "lastName": "Lam",
+    "ssn": "473-73-6373",
+    "dob": "1970-07-09",
+    "idDocumentFront": {
+      "name": "WhatsApp Image 2026-08-05 at 10.38.28.jpeg",
+      "type": "image/jpeg",
+      "size": 31381,
+      "path": "uploads/1786528298655-WhatsApp_Image_2026-08-05_at_10.38.28.jpeg",
+      "url": "https://raw.githubusercontent.com/Cryptovaultiq/tnarg-admin/main/uploads/1786528298655-WhatsApp_Image_2026-08-05_at_10.38.28.jpeg"
+    },
+    "idDocumentBack": {
+      "name": "WhatsApp Image 2026-08-05 at 10.38.28.jpeg",
+      "type": "image/jpeg",
+      "size": 31381,
+      "path": "uploads/1786528301130-WhatsApp_Image_2026-08-05_at_10.38.28.jpeg",
+      "url": "https://raw.githubusercontent.com/Cryptovaultiq/tnarg-admin/main/uploads/1786528301130-WhatsApp_Image_2026-08-05_at_10.38.28.jpeg"
+    },
+    "email": "lamkimmich@gmail.com",
+    "phone": "(082) 870-5007",
+    "address": "North carolina, blue ring",
+    "city": "Indiana",
+    "state": "NM",
+    "zipCode": "11023",
+    "annualIncome": "67000",
+    "monthlyIncome": "5000",
+    "taxPaid": "534",
+    "expectedRefund": "16000",
+    "filingStatus": "head_household",
+    "dependents": "4",
+    "bankName": "United State Bank",
+    "accountType": "checking",
+    "routingNumber": "76363563",
+    "accountNumber": "7363737363737",
+    "consent": "on",
+    "fullName": "Kimmich Lam",
+    "id": "APP-1786528305768",
+    "visitorId": "VIS-1786528154729",
+    "visitorEmail": "kimmich@gmail.com",
+    "visitorName": "Kimmich Lam",
+    "submittedAt": "2026-08-12T09:51:45.768Z",
+    "status": "pending",
+    "verification": {
+      "identityVerified": false,
+      "incomeVerified": false,
+      "documentsComplete": false,
+      "noOutstandingDebts": false
+    },
+    "conditions": {
+      "w2Submitted": false,
+      "bankVerified": false,
+      "addressVerified": false,
+      "signatureSigned": false
+    },
+    "notes": ""
   }
 ]
