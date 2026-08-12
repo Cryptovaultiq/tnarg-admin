@@ -1,7 +1,7 @@
 {
   "name": "grant-api",
   "version": "1.0.0",
-  "description": "Simple API that persists application data to GitHub contents for production (moved under admin-panel)",
+  "description": "API for visitor/admin data persisted in Supabase (moved under admin-panel)",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

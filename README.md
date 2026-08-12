@@ -1,4 +1,4 @@
-﻿# Admin Panel
+# Admin Panel
 
 This folder is a standalone admin-panel app. It can be moved to its own GitHub repository and deployed to its own Vercel project.
 
@@ -33,3 +33,8 @@ Expected API shape if configured:
 Do not use the demo username/password for production. Production auth should be handled server-side or by an auth provider.
 
 > Note: This repository has been updated with a harmless documentation-only change to trigger a fresh Vercel redeploy.
+
+
+## Supabase persistence
+
+The production API persists visitors, applications, chats, and uploads in Supabase. Run [SUPABASE_SETUP.txt](SUPABASE_SETUP.txt) in the Supabase SQL Editor, then configure the listed Supabase environment variables on the admin Vercel project. Keep the service-role key on the backend only.
