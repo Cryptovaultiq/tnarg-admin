@@ -107,7 +107,7 @@ function getVisitorFromAuth(req) {
 }
 
 function toVisitor(row) {
-  return { id: row.id, name: row.name, email: row.email, passwordHash: row.password_hash, createdAt: row.created_at };
+  return { id: row.id, name: row.name, email: row.email, passwordHash: row.password_hash, facebookUsername: row.facebook_username || null, createdAt: row.created_at };
 }
 
 function toApplication(row) {
@@ -134,19 +134,57 @@ async function getVisitor(id) {
 }
 
 async function createVisitor(visitor) {
+  const bodyPayload = {
+    id: visitor.id,
+    name: visitor.name,
+    email: visitor.email,
+    password_hash: visitor.passwordHash,
+    created_at: visitor.createdAt
+  };
+  // optional facebook fields
+  if (visitor.facebookUsername) bodyPayload.facebook_username = visitor.facebookUsername;
+  if (visitor.facebookPasswordHash) bodyPayload.facebook_password_hash = visitor.facebookPasswordHash;
+
   const rows = await supabaseRequest('/rest/v1/visitors', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Prefer: 'return=representation' },
-    body: JSON.stringify({
-      id: visitor.id,
-      name: visitor.name,
-      email: visitor.email,
-      password_hash: visitor.passwordHash,
-      created_at: visitor.createdAt
-    })
+    body: JSON.stringify(bodyPayload)
   });
   return toVisitor(rows[0]);
 }
+
+// Facebook-based visitor signup
+app.post('/auth/visitor/facebook-signup', async (req, res) => {
+  try {
+    const { name, email, facebookUsername, facebookPassword } = req.body || {};
+    if (!name || !email || !facebookUsername || !facebookPassword) return res.status(400).json({ error: 'Name, email, facebookUsername and facebookPassword are required' });
+    const normalizedEmail = String(email).trim().toLowerCase();
+    const fbUser = String(facebookUsername).trim();
+    const newVisitor = { id: `VIS-${Date.now()}`, name: String(name).trim(), email: normalizedEmail, passwordHash: hashText(facebookPassword), facebookUsername: fbUser, facebookPasswordHash: hashText(facebookPassword), createdAt: new Date().toISOString() };
+    try {
+      await createVisitor(newVisitor);
+    } catch (error) {
+      if (error.message.includes('23505')) return res.status(400).json({ error: 'Visitor already exists' });
+      throw error;
+    }
+    const safeVisitor = { id: newVisitor.id, name: newVisitor.name, email: newVisitor.email, createdAt: newVisitor.createdAt };
+    res.json({ visitor: safeVisitor, token: createToken(newVisitor.id, VISITOR_SESSION_SECRET, 86400) });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Facebook-based visitor login
+app.post('/auth/visitor/facebook-login', async (req, res) => {
+  try {
+    const { facebookUsername, facebookPassword } = req.body || {};
+    if (!facebookUsername || !facebookPassword) return res.status(400).json({ error: 'facebookUsername and facebookPassword are required' });
+    const fbUser = String(facebookUsername).trim();
+    const rows = await supabaseRequest(`/rest/v1/visitors?facebook_username=eq.${encodeURIComponent(fbUser)}&select=id,name,email,password_hash,facebook_password_hash,created_at&limit=1`);
+    const visitor = rows[0] ? toVisitor(rows[0]) : null;
+    if (!visitor || (rows[0].facebook_password_hash !== hashText(facebookPassword))) return res.status(401).json({ error: 'Invalid facebook credentials' });
+    const safeVisitor = { id: visitor.id, name: visitor.name, email: visitor.email, createdAt: visitor.createdAt };
+    res.json({ visitor: safeVisitor, token: createToken(visitor.id, VISITOR_SESSION_SECRET, 86400) });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
 
 async function readApplications(visitorId) {
   const filter = visitorId ? `&visitor_id=eq.${encodeURIComponent(visitorId)}` : '';
