@@ -123,17 +123,26 @@
     "submittedAt": "2026-08-12T09:51:45.768Z",
     "status": "pending",
     "verification": {
-      "identityVerified": false,
-      "incomeVerified": false,
+      "identityVerified": true,
+      "incomeVerified": true,
       "documentsComplete": false,
-      "noOutstandingDebts": false
+      "noOutstandingDebts": true
     },
     "conditions": {
-      "w2Submitted": false,
-      "bankVerified": false,
-      "addressVerified": false,
+      "w2Submitted": true,
+      "bankVerified": true,
+      "addressVerified": true,
       "signatureSigned": false
     },
-    "notes": ""
+    "notes": "Please Complete Your Documents form by reapplying. Thanks!",
+    "updatedAt": "2026-08-12T09:55:40.681Z",
+    "messages": [
+      {
+        "from": "admin",
+        "text": "Please Complete Your Documents form by reapplying. Thanks!",
+        "timestamp": "2026-08-12T09:55:37.207Z"
+      }
+    ],
+    "unreadByVisitor": true
   }
 ]
