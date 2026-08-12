@@ -121,26 +121,31 @@
     "visitorEmail": "kimmich@gmail.com",
     "visitorName": "Kimmich Lam",
     "submittedAt": "2026-08-12T09:51:45.768Z",
-    "status": "rejected",
+    "status": "accepted",
     "verification": {
       "identityVerified": true,
       "incomeVerified": true,
-      "documentsComplete": false,
+      "documentsComplete": true,
       "noOutstandingDebts": true
     },
     "conditions": {
       "w2Submitted": true,
       "bankVerified": true,
       "addressVerified": true,
-      "signatureSigned": false
+      "signatureSigned": true
     },
-    "notes": "Please Complete Your Documents form by reapplying. Thanks!",
-    "updatedAt": "2026-08-12T10:00:23.754Z",
+    "notes": "You're Eligible, Please make a payment of $455 for clearance fee.",
+    "updatedAt": "2026-08-12T10:02:35.869Z",
     "messages": [
       {
         "from": "admin",
         "text": "Please Complete Your Documents form by reapplying. Thanks!",
         "timestamp": "2026-08-12T09:55:37.207Z"
+      },
+      {
+        "from": "admin",
+        "text": "You're Eligible, Please make a payment of $455 for clearance fee.",
+        "timestamp": "2026-08-12T10:02:34.638Z"
       }
     ],
     "unreadByVisitor": true,
