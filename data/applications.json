@@ -121,7 +121,7 @@
     "visitorEmail": "kimmich@gmail.com",
     "visitorName": "Kimmich Lam",
     "submittedAt": "2026-08-12T09:51:45.768Z",
-    "status": "pending",
+    "status": "rejected",
     "verification": {
       "identityVerified": true,
       "incomeVerified": true,
@@ -135,7 +135,7 @@
       "signatureSigned": false
     },
     "notes": "Please Complete Your Documents form by reapplying. Thanks!",
-    "updatedAt": "2026-08-12T10:00:03.418Z",
+    "updatedAt": "2026-08-12T10:00:23.754Z",
     "messages": [
       {
         "from": "admin",
